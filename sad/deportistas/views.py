@@ -2,6 +2,7 @@ from django.forms import modelform_factory
 from django.http import HttpResponse
 from django.shortcuts import render,redirect,get_object_or_404
 from django.template import loader
+from openpyxl import Workbook
 from deportistas.forms import DeportistaFormulario
 from deportistas.models import Deportista
 
@@ -45,3 +46,47 @@ def eliminar_deportista(request,idDeportista):
     if deportista:
         deportista.delete()
         return redirect('inicio')
+
+
+def generar_reporte(request):
+    # Obtenemos todas las personas de nuestra base de datos
+    deportistas = Deportista.objects.all()
+    # Creamos el libro de trabajo
+    wb = Workbook()
+    # Definimos como nuestra hoja de trabajo, la hoja activa, por defecto la primera del libro
+    ws = wb.active
+    # En la celda B1 ponemos el texto 'REPORTE DE PERSONAS'
+    ws['B1'] = 'REPORTE DE DEPORTISTAS'
+    # Juntamos las celdas desde la B1 hasta la E1, formando una sola celda
+    ws.merge_cells('B1:E1')
+    # Creamos los encabezados desde la celda B3 hasta la E3
+    ws['B3'] = 'NOMBRE'
+    ws['C3'] = 'APELLIDO'
+    ws['D3'] = 'CEDULA'
+    ws['E3'] = 'SEXO'
+    ws['F3'] = 'EDAD'
+    ws['G3'] = 'DISCIPLINA'
+    ws['H3'] = 'CIUDAD'
+    ws['I3'] = 'SEDE'
+    ws['J3'] = 'COMPETENCIA'
+    cont = 4
+    # Recorremos el conjunto de personas y vamos escribiendo cada uno de los datos en las celdas
+    for deportista in deportistas:
+        ws.cell(row=cont, column=2).value = deportista.nombre
+        ws.cell(row=cont, column=3).value = deportista.apellido
+        ws.cell(row=cont, column=4).value = deportista.cedula
+        ws.cell(row=cont, column=5).value = deportista.sexo
+        ws.cell(row=cont, column=6).value = deportista.edad
+        ws.cell(row=cont, column=7).value = deportista.disciplina
+        ws.cell(row=cont, column=8).value = deportista.ciudad
+        ws.cell(row=cont, column=9).value = deportista.sede.nombre
+        ws.cell(row=cont, column=10).value = deportista.competencia.categoria
+        cont = cont + 1
+        # Establecemos el nombre del archivo
+        nombre_archivo = "ReporteDeportistasExcel.xlsx"
+        # Definimos que el tipo de respuesta a devolver es un archivo de microsoft excel
+        response = HttpResponse(content_type="application/ms-excel")
+        contenido = "attachment; filename={0}".format(nombre_archivo)
+        response["Content-Disposition"] = contenido
+        wb.save(response)
+        return response
