@@ -82,11 +82,11 @@ def generar_reporte(request):
         ws.cell(row=cont, column=9).value = deportista.sede.nombre
         ws.cell(row=cont, column=10).value = deportista.competencia.categoria
         cont = cont + 1
-        # Establecemos el nombre del archivo
-        nombre_archivo = "ReporteDeportistasExcel.xlsx"
-        # Definimos que el tipo de respuesta a devolver es un archivo de microsoft excel
-        response = HttpResponse(content_type="application/ms-excel")
-        contenido = "attachment; filename={0}".format(nombre_archivo)
-        response["Content-Disposition"] = contenido
-        wb.save(response)
-        return response
+    # Establecemos el nombre del archivo
+    nombre_archivo = "ReporteDeportistasExcel.xlsx"
+    # Definimos que el tipo de respuesta a devolver es un archivo de microsoft excel
+    response = HttpResponse(content_type="application/ms-excel")
+    contenido = "attachment; filename={0}".format(nombre_archivo)
+    response["Content-Disposition"] = contenido
+    wb.save(response)
+    return response
